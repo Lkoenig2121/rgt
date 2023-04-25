@@ -1,0 +1,112 @@
+// RGT Prisma Schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Product {
+  id                String            @id @default(cuid())
+  created           DateTime          @default(now())
+  name              String?
+  description       String?           @db.VarChar(8000)
+  warranty          String?
+  approval          String?
+  features          Json?
+  specs             Json?
+  specSheetUrl      String?
+  categoryLevel0_tx String?
+  categoryLevel1_tx String?
+  thumbnailUrl      String?
+  imageUrl          String?
+  sku               String?
+  price             Int?
+  price_tx          String?
+  brand_tx          String?
+  brand             Brand?            @relation(fields: [brandId], references: [id])
+  brandId           String?
+  categoryLevel0    Category_Level_0? @relation(fields: [categoryLevel0Id], references: [id])
+  categoryLevel0Id  String?
+  categoryLevel1    Category_Level_1? @relation(fields: [categoryLevel1Id], references: [id])
+  categoryLevel1Id  String?
+
+  @@index([id])
+  @@index([brand_tx])
+  @@index([brandId])
+  @@index([categoryLevel0Id])
+  @@index([categoryLevel1Id])
+  @@index([categoryLevel0_tx])
+  @@index([categoryLevel1_tx])
+  @@index([categoryLevel0Id, categoryLevel1Id])
+  @@index([brandId, categoryLevel0Id, categoryLevel1Id])
+  @@index([categoryLevel0_tx, categoryLevel1_tx])
+  @@index([brand_tx, categoryLevel0_tx, categoryLevel1_tx])
+  @@fulltext([name])
+  @@fulltext([sku])
+  @@fulltext([name, sku])
+}
+
+model Highlight {
+  id                String   @id @default(cuid())
+  created           DateTime @default(now())
+  name              String?
+  description       String?  @db.VarChar(8000)
+  warranty          String?
+  approval          String?
+  features          Json?
+  specs             Json?
+  specSheetUrl      String?
+  categoryLevel0_tx String?
+  categoryLevel1_tx String?
+  thumbnailUrl      String?
+  imageUrl          String?
+  sku               String?
+  price             Int?
+  price_tx          String?
+  brand_tx          String?
+  brand             Json?
+  brandId           String?
+  categoryLevel0    Json?
+  categoryLevel0Id  String?
+  categoryLevel1    Json?
+  categoryLevel1Id  String?
+
+  @@index([id])
+  @@index([categoryLevel0_tx])
+  @@index([categoryLevel1_tx])
+  @@index([categoryLevel0_tx, categoryLevel1_tx])
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  created   DateTime  @default(now())
+  logoUrl   String?
+  master_fg Boolean?
+  products  Product[]
+}
+
+model Category_Level_0 {
+  id            String             @id @default(cuid())
+  name          String             @unique
+  created       DateTime           @default(now())
+  products      Product[]
+  subcategories Category_Level_1[]
+}
+
+model Category_Level_1 {
+  id                 String            @id @default(cuid())
+  name               String            @unique
+  created            DateTime          @default(now())
+  products           Product[]
+  Category_Level_0   Category_Level_0? @relation(fields: [category_Level_0Id], references: [id])
+  category_Level_0Id String?
+
+  @@index([category_Level_0Id])
+}
